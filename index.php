@@ -1,574 +1,395 @@
 <?php
 session_start();
-if(isset($_SESSION['user1'])) {
-
-    include "./model/pdo.php";
-    include "./model/loai_phim.php";
-    include "./model/phim.php";
-    include "./model/taikhoan.php";
-    include "./model/lichchieu.php";
-    include "./model/phong.php";
-    include "./model/thongke.php";
-    include "./model/ve.php";
-    include "./model/khunggio.php";
-    include "./model/binhluan.php";
-    $loadphim = loadall_phim();
-    $loadloai = loadall_loaiphim();
-    $loadtk = loadall_taikhoan();
-    include "./view/home/header.php";
-
-    if (isset($_GET['act']) && ($_GET['act'] != "")) {
-        $act = $_GET['act'];
-        switch ($act) {
-            case "QLloaiphim":
-                include "./view/loaiphim/QLloaiphim.php";
-                break;
-                case "themloai":
-                    if (isset($_POST['gui'])) {
-                        
-                      if(!isset($_POST['name']) || empty($_POST['name'])) {
-                        $error = "Tên thể loại không được để trống";
-
-                      }
-                        
-                      if(!isset($error)){
-                        $name = $_POST['name'];
-                        them_loaiphim($name); 
-                        $suatc = "THÊM THÀNH CÔNG";
-
-                      }
-                  
-                    }
-
-                    include "./view/loaiphim/them.php"; 
-                    break;
-            case "sualoai":
-                if (isset($_GET['idsua'])) {
-                    $loadone_loai = loadone_loaiphim($_GET['idsua']);
-                }
-                include "./view/loaiphim/sua.php";
-                break;
-            case "xoaloai":
-                if (isset($_GET['idxoa'])) {
-                    xoa_loaiphim($_GET['idxoa']);
-                    $loadloai = loadall_loaiphim();
-                    include "./view/loaiphim/QLloaiphim.php";
-                } else {
-                    include "./view/loaiphim/QLloaiphim.php";
-                }
-                break;
-                case "updateloai":
-
-                    if (isset($_POST['capnhat'])) {
-                         $id = $_POST['id'];
-                         $name = $_POST['name'];
-                  if($name == ''){
-                  $error ="Vui lòng điền đầy đủ thông tin";
-                  $loadone_loai = loadone_loaiphim($id);
-                  include "./view/loaiphim/sua.php";
-                  break;
-                  }else{
-                         update_loaiphim($id, $name);
-                         $suatc = "SỬA THÀNH CÔNG";
-
-                    }
-                  }
-                    $loadloai = loadall_loaiphim();
-                    
-                     include "./view/loaiphim/QLloaiphim.php";
-                    break;
-            case "QLphim":
-                if(isset($_POST['tk1'])&&($_POST['tk1'])){
-                    $searchName1 = $_POST['ten'];
-                    $searchLoai = $_POST['loai'];
-                }else{
-                    $searchName1 ="";
-                    $searchLoai="";
-                }
-                $loadphim = loadall_phim($searchName1,$searchLoai);
-                include "./view/phim/QLphim.php";
-                break;
-              case "themphim":
-                if (isset($_POST['gui'])) {
-                    $tieu_de = $_POST['tieu_de'];
-                    $daodien = $_POST['daodien'];
-                    $dienvien = $_POST['dienvien'];
-                    $quoc_gia = $_POST['quoc_gia'];
-                    $gia_han_tuoi = $_POST['gia_han_tuoi'];
-                    $thoiluong = $_POST['thoiluong'];
-                    $date = $_POST['date'];
-                    $link = $_POST['link'];
-                    $id_loai = $_POST['id_loai'];
-                    $mo_ta = $_POST['mo_ta'];
-                    $img = $_FILES['anh']['name'];
-                    $target_dir = "../Trang người dùng/imgavt/";
-                    $target_file = $target_dir . basename($_FILES['anh']['name']);
-                    if (move_uploaded_file($_FILES['anh']['tmp_name'], $target_file)) {
-                        echo "Bạn đã upload ảnh thành công";
-                    } else {
-                        echo "Upload ảnh không thành công";
-                    }
-                    if( $tieu_de =='' || $daodien =='' || $dienvien==''|| $quoc_gia==''|| $gia_han_tuoi==''|| $img==''|| $mo_ta==''|| $thoiluong==''|| $date==''|| $id_loai==''){
-                      $error =  "Vui  lòng không để chống";
-
-                          include "./view/phim/them.php";
-                        break;
-                      }else{
-                    them_phim($tieu_de, $daodien, $dienvien, $img, $mo_ta, $thoiluong, $quoc_gia, $gia_han_tuoi, $date, $id_loai,$link);
-                     $suatc = "Thêm thành công";
-
-                }
-
+include "model/pdo.php";
+include "model/loai_phim.php";
+include "model/phim.php";
+include "model/taikhoan.php";
+include "model/lichchieu.php";
+include "model/ve.php";
+include "model/hoadon.php";
+date_default_timezone_set("Asia/Ho_Chi_Minh");
+$loadloai = loadall_loaiphim();
+$loadphim = loadall_phim();
+$loadphimhot = loadall_phim_hot();
+$loadphimhome = loadall_phim_home();
+include "view/header.php";
+if(isset($_GET['act']) && $_GET['act']!=""){
+    $act = $_GET['act'];
+    switch ($act) {
+        case "ctphim":
+            if (isset($_GET['id']) && $_GET['id'] > 0) {
+                $phim = loadone_phim($_GET['id']);
             }
-                $loadphim = loadall_phim();
-                include "./view/phim/them.php";
+            unset($_SESSION['mv']);
+            include "view/ctphim.php";
+            break;
+            case "dsphim1":
+                $dsp = loadall_phim();
+                // $dsp=loadall_phim();
+                include "view/dsphim1.php";
                 break;
-            case "sualichchieu":
-                if (isset($_GET['idsua'])) {
-                    $loadone_lc = loadone_lichchieu($_GET['idsua']);
-                }
-                include "./view/suatchieu/sua.php";
-                break;
+        case "dsphim":
+            if (isset($_POST['kys']) && $_POST['kys'] != "") {
 
-            case "updatephim":
-                if (isset($_POST['capnhat'])) {
-                    $id = $_POST['id'];
-                    $tieu_de = $_POST['tieu_de'];
-                    $daodien = $_POST['daodien'];
-                    $dienvien = $_POST['dienvien'];
-                    $quoc_gia = $_POST['quoc_gia'];
-                    $gia_han_tuoi = $_POST['gia_han_tuoi'];
-                    $thoi_luong = $_POST['thoiluong'];
-                    $date = $_POST['date'];
-                    $id_loai = $_POST['id_loai'];
-                    $mo_ta = $_POST['mo_ta'];
+                $kys = $_POST['kys'];
+            } else {
+                $kys = "";
+            }
+            if (isset($_GET['id_loai']) && $_GET['id_loai'] > 0) {
+                $id_loai = $_GET['id_loai'];
+                $tenloai = load_ten_loai($id_loai);
+            } else {
+                $id_loai = 0;
+            }
+            $dsp = loadall_phim1($kys, $id_loai);
 
-                    // Xử lý ảnh
-                    $img = $_FILES['anh']['name'];
-                    $target_dir = "../Trang người dùng/imgavt/";
-                    $target_file = $target_dir . basename($_FILES['anh']['name']);
-
-                    if (move_uploaded_file($_FILES['anh']['tmp_name'], $target_file)) {
-                        echo "Bạn đã upload ảnh thành công";
-                    } else {
-                        echo "Upload ảnh không thành công";
-                    }
-
-                    // Kiểm tra dữ liệu
-                    if ($tieu_de == '' || $daodien == '' || $dienvien == '' || $quoc_gia == '' || $gia_han_tuoi == ''  || $mo_ta == '' || $thoi_luong == '' || $date == '' || $id_loai == '') {
-                        $error = "Vui lòng không để trống";
-
-                            $loadone_phim = loadone_phim($id);
-
-                        include "./view/phim/sua.php";
-                        break;
-                    } else {
-                        sua_phim($id, $tieu_de, $img, $mo_ta, $thoi_luong, $date, $id_loai);
-                        $suatc = "Cập nhật thành công";
-                    }
-                }
-
-                $loadphim = loadall_phim();
-                include "./view/phim/QLphim.php";
-               break;
-            case "themlichchieu":
-                $loadphim = loadall_phim();
-                $loadphong = load_phong();
-                if (isset($_POST['them'])) {
-                    $id_phim = $_POST['id_phim'];
-                    $ngay_chieu = $_POST['nc'];
-                    if($id_phim ==''||$ngay_chieu =='') {
-                     $error = "Vui lòng không để trống";
-                     $loadone_lc = loadone_lichchieu($id);
-                     include "./view/suatchieu/them.php";
-                     break;
-                    }else{
-                    them_lichchieu($id_phim,$ngay_chieu);
-                     $suatc = "Thêm thành công";
-
+            $nameth = phim_select_all();
+            // $dsp=loadall_phim();
+            include "view/dsphim.php";
+            break;
+        case "phimsapchieu":
+            $psc = load_phimsc();
+            include "view/phimsc.php";
+            break;
+        case "phimdangchieu":
+            $pdc = load_phimdc();
+            include "view/phimdc.php";
+            break;
+        case "lienhe":
+            include "view/lienhe.php";
+            break;
+        case "tintuc":
+            include "view/tintuc-big.php";
+            break;
+        case "rapchieu":
+            include "view/rapchieu.php";
+            break;
+            case "dangnhap":
+                if (isset($_POST['login'])) {
+                    $user = htmlspecialchars($_POST['user'], ENT_QUOTES, 'UTF-8');
+                    $pass = htmlspecialchars($_POST['pass'], ENT_QUOTES, 'UTF-8');
+                    $check_tk = check_tk($user, $pass);
                 
-             }
-                       }
-                $loadlich = loadall_lichchieu();
-                include "./view/suatchieu/them.php";
-                break;
-                case "xoaphim":
-                    if (isset($_GET['idxoa'])) {
-                        xoa_phim($_GET['idxoa']);
-                        $loadphim = loadall_phim();
-                        include "./view/phim/QLphim.php";
-                    }
-                    break;
-                    case "suaphim":
-                        if (isset($_GET['idsua'])) {
-                            $loadone_phim = loadone_phim($_GET['idsua']);
-                        }
-                        include "./view/phim/sua.php";
+                    if ($user == '' || $pass == '') {
+                        $error = "Vui lòng không để trống";
+                        include "view/login/dangnhap.php";
                         break;
-            case "updatelichchieu":
-                $loadphim = loadall_phim();
-                $loadphong = load_phong();
-                if(isset($_POST['capnhat'])) {              
-         
-                        $id = $_POST['id'];
-                        $id_phim = $_POST['id_phim'];   
-                        $ngay_chieu = $_POST['nc'];
-                        if($id ==''||$id_phim ==''||$ngay_chieu =='') {
-                          $error = "Vui lòng không để trống";
-                           $loadone_lc = loadone_lichchieu($id);
-                          include "./view/suatchieu/sua.php";
-                          break;
-                         }else{
-                        sua_lichchieu($id, $id_phim,  $ngay_chieu);
-                        $suatc = "SỬA THÀNH CÔNG";
-
-                    }
-                  
-                  }
-                  $loadlich = loadall_lichchieu();
-                  include "./view/suatchieu/QLsuatchieu.php";
-                  break;
-            case "QLcarou":
-                include "./view/phim/sua.php";
-                break;
-          
-            case "khachhang":
-
-                include "./view/user/khachhang.php";
-                break;
-                case "DTdh":
-                    $dt = load_thongke_doanhthu();
-
-                    include "./view/danhthu/DTdh.php";
-                    break;
-                case "DTthang":
-                    $dtt =  load_doanhthu_thang1();
-                    $dtt1 =  load_doanhthu_thang();
-                    include "./view/danhthu/DTthang.php";
-                    break;
-                case "DTtuan":
-                    $dtt =  load_doanhthu_tuan1();
-                    $dtt1 =  load_doanhthu_tuan();
-                    include "./view/danhthu/DTtuan.php";
-                    break;
-                case "DTngay":
-                    $dtt =  load_doanhthu_ngay1();
-                    $dtt1 =  load_doanhthu_ngay();
-                    include "./view/danhthu/DTngay.php";
-                    break;
-            case "DTphim":
-                include "./view/danhthu/DTphim.php";
-                break;
-            case "timeline":
-                include "./view/voucher/timeline.php";
-                break;
-            case "chitiethoadon":
-                include "./view/vephim/chitiethoadon.php";
-                break;
-
-            case "QLfeed":
-                    $listbl =  loadall_bl();
-                    $tong = count($listbl);
-                    $loadtk = loadall_taikhoan();
-                    $loadloai = loadall_loaiphim();
-                    include "./view/feedblack/QLfeed.php";
-                         break;
-            case "xoabl":
-                         if(isset($_GET['id'])){
-                            $id = $_GET['id'];
-                            delete_binhluan($id);
+                    } else {
+                        if (is_array($check_tk) && $check_tk['vai_tro'] == 0) {
+                            $_SESSION['user'] = $check_tk;
+                        } else {
+                            $thongbao = "Đăng nhập không thành công. Vui lòng kiểm tra tài khoản của bạn.";
                         }
-                         $listbl =  loadall_bl();
-                         include "./view/feedblack/QLfeed.php";
-                          break;
-            case "thoigian":
-                $loadkgc = loadall_khunggiochieu();
-                include "./view/suatchieu/thoigian/thoigian.php";
-                break;
-            case "QLsuatchieu":
-                $loadlich = loadall_lichchieu();
-                include "./view/suatchieu/QLsuatchieu.php";
-                break;
-            case "ve":
-                if(isset($_POST['tk'])&&($_POST['tk'])){
-                    $searchName = $_POST['ten'];
-                    $searchTieuDe = $_POST['tieude'];
-                    $searchid = $_POST['id_ve'];
-                }else{
-                    $searchName ="";
-                    $searchTieuDe="";
-                    $searchid = "";
-                }
-                $loadvephim =loadall_vephim1($searchName, $searchTieuDe, $searchid);
-                include "./view/vephim/ve.php";
-                break;
-            case "suavephim":
-                if(isset($_GET['idsua'])){
-                    $loadve=loadone_vephim($_GET['idsua']);
-                }
-                include "./view/vephim/sua.php";
-                break;
-            case "updatevephim":
-                if(isset($_POST['capnhat'])){
-                    $id =$_POST['id'];
-                    $trang_thai =$_POST['trang_thai'];
-                    update_vephim($id,$trang_thai);
-                }    if(isset($_POST['tk'])&&($_POST['tk'])){
-                $searchName = $_POST['ten'];
-                $searchTieuDe = $_POST['tieude'];
-                $searchid = $_POST['id_ve'];
-            }else{
-                $searchName ="";
-                $searchTieuDe="";
-                $searchid = "";
-            }
-                $loadvephim =loadall_vephim1($searchName, $searchTieuDe, $searchid);
-                include "view/vephim/ve.php";
-             break;
-            case "phong":
-                $loadphong = load_phong();
-                include "./view/phong/phong.php";
-                break;
-            case "xoaphong":
-                if (isset($_GET['idxoa'])) {
-                    xoa_phong($_GET['idxoa']);
-                    $loadphong = load_phong();
-                    include "./view/phong/phong.php";
-                }
-                break;
-            case "suaphong":
-                if (isset($_GET['ids'])) {
-                    $loadphong1 = loadone_phong($_GET['ids']);
-                }
-                include "./view/phong/sua.php";
-                break;
-
-                case "updatephong":
-
-                    $loadphong = load_phong();
-                    if (isset($_POST['capnhat'])) {
-                        $id = $_POST['id'];
-                        $name = $_POST['name'];
-                        if($id==''||$name =='') {
-                          $error = "Vui lòng không để trống";
-                          $loadphong1 = load_phong($id);
-                          include "./view/phong/sua.php";
-                          break;
-                         }else{
-                        update_phong($id, $name);
-                        $suatc = "SỬA THÀNH CÔNG";
-
                     }
-                  }
-                    $loadphong = load_phong();
-                    include "./view/phong/phong.php";
-                    break;
-                case "themphong":
-                    $loadphong = load_phong();
-                   if (isset($_POST['len'])) {
-                       //  $id = $_POST['id'];
-                       $name = $_POST['name'];
-                       if($name =='') {
-                         $error = "Vui lòng không để trống";
-                         $loadphong1 = load_phong($id);
-                         include "./view/phong/them.php";
-                         break;
-                        }else{
-                       them_phong( $name);
-                       $suatc = "THÊM THÀNH CÔNG";
+                }
+                
+        include "view/login/dangnhap.php";
+                break;
+  
+            case "dangky":
+                $min_password_length = 6;
 
-                   }
-               }
-                    $loadphong = load_phong();
-                   include "./view/phong/them.php";
-                   break;
-            case "updatethoigian":
-                $loadlc = loadall_lichchieu();
-                $loadphong = load_phong();
-                if (isset($_POST['capnhat'])) {
-                    $id = $_POST['id'];
-                    $id_lc = $_POST['id_lc'];
-                    $id_phong = $_POST['id_phong'];
-                    $thoi_gian_chieu = $_POST['tgc'];
-                    sua_kgc($id, $id_lc, $id_phong, $thoi_gian_chieu);
-                }
-                $loadkgc = loadall_khunggiochieu();
-                include "./view/suatchieu/thoigian/thoigian.php";
-                break;
-            case "themthoigian":
-                $loadlc = loadall_lichchieu();
-                $loadphong = load_phong();
-                if (isset($_POST['them'])) {
-                    $id_lc= $_POST['id_lc'];
-                    $id_phong = $_POST['id_phong'];
-                    $thoi_gian_chieu = $_POST['tgc'];
-                    if($id_lc ==''|| $id_phong==''|| $thoi_gian_chieu=='') {
-                      $error = "Vui lòng không để trống";
-                      $loadkgc = loadall_khunggiochieu();
-                      include "./view/suatchieu/thoigian/them.php";
-                      break;
-                     }else{
-                    them_kgc($id_lc, $id_phong, $thoi_gian_chieu);
-                    $suatc = "THÊM THÀNH CÔNG";
+                if (isset($_POST['dangky']) && $_POST['dangky'] != "") {
+                    $name = $_POST['name'];
+                    $sdt = $_POST['phone'];
+                    $dc = $_POST['dia_chi'];
+                    $user = $_POST['user'];
+                    $pass = $_POST['pass'];
+                    $email = $_POST['email'];
 
-                }
-            }
-                $loadkgc = loadall_khunggiochieu();
-                include "./view/suatchieu/thoigian/them.php";
-                break;
-            case "suathoigian":
-                $loadlich = loadall_lichchieu();
-                $loadphong = load_phong();
-                if (isset($_GET['ids'])) {
-                    $load1kgc = loadone_khung_gio_chieu($_GET['ids']);
-                }
-                include "./view/suatchieu/thoigian/sua.php";
-                break;
-            case "xoathoigian":
-                if (isset($_GET['idxoa']) && ($_GET['idxoa'] > 0)){
-                    xoa_kgc($_GET['idxoa']);
-                }
-                $loadkgc = loadall_khunggiochieu();
-                include "./view/suatchieu/thoigian/thoigian.php";
-                break;
-            case "xoalichchieu":
-                if (isset($_GET['idxoa']) && ($_GET['idxoa'] > 0)){
-                    xoa_lc($_GET['idxoa']);
-                }
-                $loadlich = loadall_lichchieu();
-                include "./view/suatchieu/QLsuatchieu.php";
-                break;
-            case "QTkh":
-                $loadall_kh1 = loadall_taikhoan();
-                include "./view/user/khachhang.php";
-                break;
-            case "QTvien":
-                $loadall_kh = loadall_taikhoan_nv();
-                include "./view/user/QTvien.php";
-                break;
-                case "suatk":
-                    if (isset($_GET['idsua'])) {
-                        $loadtk = loadone_taikhoan($_GET['idsua']);
+                    if (
+                        !empty($name) && !empty($sdt) &&
+                        !empty($dc) && !empty($user) &&
+                        !empty($pass) && !empty($email)
+                    ) {
+                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            $thongbao = "Vui lòng nhập một địa chỉ email hợp lệ.";
+                        } else if (strlen($pass) < $min_password_length) {
+                            $thongbao = "Mật khẩu phải chứa ít nhất $min_password_length ký tự.";
+                        } else if (!preg_match('/^[a-zA-Z0-9_]+$/', $user)) {
+                            $thongbao = "Tên người dùng không hợp lệ. Tên người dùng không được chứa khoảng trắng và dấu.";
+                        } else {
+                            // Kiểm tra email đã tồn tại
+                            $email_check = check_email($email);
+                            if ($email_check && $email_check['email'] == $email) {
+                                $thongbao = "Email đã tồn tại!";
+                            } else {
+                                // Thêm tài khoản mới
+                                insert_taikhoan($email, $user, $pass, $name, $sdt, $dc);
+                                $thongbao = "Đăng ký thành công xin mời đăng nhập!";
+                            }
+                        }
+                    } else {
+                        $thongbao = "Vui lòng điền đầy đủ thông tin.";
                     }
-                    include "./view/user/sua.php";
-                    break;
-                case "themuser":
-                    if(isset($_POST['them'])){
-                        if(empty($_POST['name'])) {
-                            $error= " Không được để trống";
-                          }
-                          if(empty($_POST['user'])) {
-                            $error = " Không được để trống";
-                          }
-                          if(empty($_POST['email'])) {
-                            $error = " Không được để trống";
-                          }
-                          else if(!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-                            $error = "Email không đúng định dạng"; 
-                          }
-                          if(empty($_POST['phone'])) {
-                            $error = " Không được để trống";
-                          }
-                          if(empty($_POST['dia_chi'])) {
-                            $error= " Không được để trống";
-                          }
-                          if(!isset($error)) {
-                      $name =$_POST['name'];
-                      $user =$_POST['user'];
-                      $email =$_POST['email'];
-                      $phone =$_POST['phone'];
-                      $dia_chi =$_POST['dia_chi'];
-                      insert_taikhoan($email,$user,$pass,$name,$phone,$dia_chi);
-                      $suatc = "Thêm thành công";
-
-                    }   
                 }
-                    $loadall_kh= loadall_taikhoan();
-                    include "./view/user/them.php";
+
+                include "view/login/dangky.php";
+                break;
+
+                case "quenmk":
+                    if (isset($_POST['guiemail'])) {
+                        $email = $_POST['email'];
+                        if($email =='') {
+                            $error = "vui lòng không để trống";
+                            include "view/login/quenmk.php";
+                            break;
+                           }else{
+                        $sendMailMess = sendMail($email);
+                        // $error ="gửi thành công";
+                    }}
+                    include "view/login/quenmk.php";
                     break;
                     
-                      case "updateuser":
-                        if(isset($_POST['capnhat'])){
-                           $id =$_POST['id'];
-                           $name =$_POST['name'];
-                           $user =$_POST['user'];
-                           $pass =$_POST['pass'];
-                           $email =$_POST['email'];
-                           $phone =$_POST['phone'];
-                           $dia_chi =$_POST['dia_chi'];
-                           if($id==''||$name ==''||$email==''|| $pass==''|| $user==''||$phone==''||$dia_chi=='') {
-                             $error = "Vui lòng không để trống";
-                             $loadkgc = loadall_khunggiochieu();
-                             include "./view/user/sua.php";
-                             break;
-                           }else {
-                           sua_tk($id, $name, $user, $pass, $email, $phone, $dia_chi);  
-                           $suatc = "Sửa thành công";
- 
+                    case "suatk":
+                        if (isset($_GET['idsua'])) {
+                            $loadtk = loadone_taikhoan($_GET['idsua']);
                         }
-                       }
-     
-                        $loadalltk = loadall_taikhoan_nv();
-                       include "./view/user/QTvien.php";
-                       break;        
-                           case "xoatk":
-                    if(isset($_GET['idxoa'])){
-                       $id = $_GET['idxoa'];
-                       xoa_tk($id);
-                   
-                   $loadall_kh=loadall_taikhoan();
-                   include "./view/user/QTvien.php";
-                } else{include "./view/user/QTvien.php";}  
-                break;
+                        include "view/login/sua.php";
+                        break;
+                        case "updatetk":
+                            if (isset($_GET['idsua'])) {
+                                $loadtk = loadone_taikhoan($_GET['idsua']);
+                            }
+                        if (isset($_POST['capnhat']) && $_POST['capnhat'] != "") {
+                            if (
+                                 !empty($_POST['phone']) &&
+                                !empty($_POST['dia_chi']) && !empty($_POST['user']) && !empty($_POST['email'])
+                            ) {
+                                if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                                    
+                                        if (preg_match('/^[a-zA-Z0-9_]+$/', $_POST['user'])) {
+                            $id = $_POST['id'];
+                            $user = $_POST['user'];
+                            $email = $_POST['email'];
+                            $sdt = $_POST['phone'];
+                            $dc = $_POST['dia_chi'];
+                            sua_tk($id, $user, $email, $sdt, $dc);
+                            $thongbao= "Sửa thành công ";
+                        } else {
+                            $thongbao= "Tên người dùng không hợp lệ. Tên người dùng không được chứa khoảng trắng và dấu.";
+                        }
+                    
+                    }
+                 
+            } else {
+                $thongbao= "Vui lòng điền đầy đủ thông tin.";
+            }
+            }
+            $loadtk = loadone_taikhoan($id);
+                            include "view/login/sua.php";
+                        // } else {
+                        //     include "view/login/sua.php";
+                        // }
+                        break;
+                        case "datve":
+                            $khunggio = array();
+                            $realtime = date('Y-m-d H:i:s');
+                            if (isset($_GET['id']) && $_GET['id'] > 0) {
+                                $id_phim = $_GET['id'];
+                                $phim = loadone_phim($id_phim);
+                            } else {
+                                $id_phim = 0;
+                            }
+                            if ((isset($_GET['id_lc'])) && ($_GET['id_lc'])) {
+                                $id_lc = $_GET['id_lc'];
+                                $khunggio = khunggiochieu_select_by_idxc($id_lc);
+                            }
+                            $lc = lichchieu_select_by_id_phim($id_phim);
+                            unset($_SESSION['mv']);
+                            include "view/dv.php";
+                
+                            break;
+
+        case "datve2":
+
+            if (!isset($_SESSION['mv'])) {
+                $id_phim = $_GET['id'];
+                $id_lichchieu = $_GET['id_lc'];
+                $id_gio = $_GET['id_g'];
+                $_SESSION['mv'] = [$id_phim, $id_lichchieu, $id_gio];
+                $list_lc = load_lc_p($id_phim, $id_lichchieu, $id_gio);
+            } else {
+                $list_lc = load_lc_p($_SESSION['mv'][0], $_SESSION['mv'][1], $_SESSION['mv'][2]);
+            }
+            $_SESSION['tong'] = $list_lc;
+
+            if (isset($_SESSION['user']) && ($_SESSION['user'])) {
+
+                include "view/dv2.php";
+            } else {
+                $error = "";
+                $thongbao1= "";
+                $thongbao['dangnhap'] = 'đăng nhập đi để đặt vé!';
+                include 'view/login/dangnhap.php';
+            }
+
+            break;
             case "dangxuat":
-                unset($_SESSION['user1']);
-                header('location: login.php');
-                exit;
-            case "home":
-                $best_combo = best_combo();
-                $tong_tuan = tong_week();
-                $tong_thang = tong_thang();
-                $tong_day = tong_day();
-                $tpdc = tong_phimdc();
-                $tpsc = tong_phimsc();
-                $tong = tong();
-                include "./view/home.php";
+                dang_xuat();
+                include "view/login/dangnhap.php";
                 break;
-            case "ctve":
-                if (isset($_GET['id']) && ($_GET['id'] > 0)){
-                    $loadone_ve =  loadone_vephim($_GET['id']);
+            case "doimk":
+                if (isset($_POST['capnhat']) && $_POST['capnhat'] != "") {
+                    $id = $_POST['id'];
+                    $pass = $_POST['pass'];
+                    $passmoi = $_POST['passmoi'];
+                    $passmoi1 = $_POST['passmoi1'];
+                    $old_pass = mkcu($id);
+                    if($pass==''||$passmoi==''||$passmoi1==''){
+                        $error = "vui lòng không để trống";
+                    }
+                    if($pass != $old_pass){
+                        $error = "Mật khẩu cũ không đúng";
+                    }
+                    
+                    // Kiểm tra mật khẩu mới có trùng mật khẩu cũ không
+                    if($passmoi != $passmoi1){
+                       $error = "Mật khẩu mới không trùng nhau"; 
+                    }
+            
+                    if(!isset($error)){
+                        doi_tk($id,$passmoi); 
+                        $error = "đổi mật khẩu thành công";
+                        // $_SESSION['user'] = check_tk($user, $pass);
+                        include "view/login/doimk.php";  
+                    }
+                    else{
+                        // Hiển thị lỗi ra view
+                        include "view/login/doimk.php"; 
+                    }
+                } else {
+                    include "view/login/doimk.php";
                 }
-                include "view/vephim/ct_ve.php";
+    
                 break;
-            case "capnhat_tt_ve":
-                if(isset($_POST['tk'])&&($_POST['tk'])){
-                $searchName = $_POST['ten'];
-                $searchTieuDe = $_POST['tieude'];
-                  }else{
-                        $searchName ="";
-                          $searchTieuDe="";
-                   }
+        case "dv3":
+            if (isset($_POST['tiep_tuc']) && ($_POST['tiep_tuc'])) {
+                $ten_ghe = array();
+                foreach ($_POST as $key => $value) {
+                    if ($key == "ten_ghe") {
+                        $ten_ghe['ghe'] = $value;
+                    }
+                }
 
-                      include "./view/vephim/ve.php";
-                if(isset($_POST['capnhat'])){
-                    capnhat_tt_ve();
+                $gia_ghe = $_POST['giaghe'];
+                array_push($_SESSION['tong'], $gia_ghe, $ten_ghe);
+                if (isset($ten_ghe['ghe']) && ($ten_ghe['ghe'])) {
+                    $thongbaoghe = "";
+                }else{
+                    $thongbaoghe = "Phải chọn ghế";
+                    include "view/dv2.php";
+                    break;
                 }
-                $loadvephim =loadall_vephim1($searchName, $searchTieuDe);
-                include "./view/user/QTvien.php";
+            }
+            include 'view/doan.php';
+            break;
+        case "dv4":
+            if (isset($_POST['tiep_tuc']) && ($_POST['tiep_tuc'])) {
+                $ten_ghe = array();
+                foreach ($_POST as $key => $value) {
+                    if ($key == "ten_ghe") {
+                        $ten_ghe['ghe'] = $value;
+                    }
+                }
+
+                $ten_doan = array();
+                foreach ($_POST as $key => $value) {
+                    if ($key == "ten_do_an") {
+                        $ten_doan['doan'] = $value;
+                    }
+                }
+
+                $gia_ghe = $_POST['giaghe'];
+                array_push($_SESSION['tong'], $gia_ghe, $ten_ghe, $ten_doan);
+                $ghe = implode(',', $ten_ghe['ghe']);
+                $ngay_tt = date('Y-m-d H:i:s');
+                $id_user = $_SESSION['user']['id'];
+                $id_kgc = $_SESSION['tong']['id_gio'];
+                $combo = (isset($ten_doan['doan']) && !empty($ten_doan['doan'])) ? implode(', ', $ten_doan['doan']) : null;
+                $id_lc = $_SESSION['tong']['id_lichchieu'];
+                $id_phim = $_SESSION['tong']['id_phim'];
+                $id_hd = them_hoa_don($ngay_tt, $gia_ghe);
+                if ($id_hd) {
+                    $_SESSION['id_hd'] = $id_hd;
+                    $id_ve = them_ve($gia_ghe, $ngay_tt, $ghe, $id_user, $id_kgc, $id_hd, $id_lc, $id_phim, $combo);
+
+                    if ($id_ve) {
+                        $_SESSION['id_ve'] = $id_ve;
+                    } else {
+                        echo "Đã xảy ra lỗi khi đặt vé. Vui lòng thử lại.";
+                    }
+                } else {
+                    echo " xảy ra lỗi khi tạo hóa đơn. Vui lòng thử lại.";
+                }
+
+            }
+            include 'view/thanhtoan.php';
+            break;
+        case  "thanhtoan" :
+            include "view/thanhtoan.php";
+            break;
+        case "theloai":
+            if (isset($_POST['kys']) && $_POST['kys'] != "") {
+
+                $kys = $_POST['kys'];
+            } else {
+                $kys = "";
+            }
+            if (isset($_GET['id_loai']) && $_GET['id_loai'] > 0) {
+                $id_loai = $_GET['id_loai'];
+                $ten_loai = load_ten_loai($id_loai);
+            } else {
+                $id_loai = 0;
+            }
+            $dsp = loadall_phim1($kys, $id_loai);
+
+
+            include "view/theloaiphim.php";
+            break;
+        case "ve" :
+            if (isset($_GET['id']) && $_GET['id'] > 0) {
+                $load_ve = load_ve($_GET['id']);
+            }
+            include "view/ve.php";
+            break;
+        case 'xacnhan':
+            if (isset($_GET['message']) && ($_GET['message'] == 'Successful.')) {
+                trangthai_hd($_SESSION['id_hd']);
+                trangthai_ve($_SESSION['id_hd']);
+                $load_ve_tt =  load_ve_tt($_SESSION['id_hd']);
+                gui_mail_ve($load_ve_tt);
+                require_once "view/ve_tt.php";
                 break;
-        }
-    } else {
-        $best_combo = best_combo();
-        $tong_tuan = tong_week();
-        $tong_thang = tong_thang();
-        $tong_day = tong_day();
-        $tpdc = tong_phimdc();
-        $tpsc = tong_phimsc();
-        $tong = tong();
-        include "./view/home.php";
+            }
+        case "ctve":
+            if (isset($_GET['id']) && ($_GET['id'] > 0)){
+                $loadone_ve =  loadone_vephim($_GET['id']);
+            }
+            include "view/chitiet_ve.php";
+            break;
+
+        case "huy_ve":
+            if(isset($_POST['capnhat'])){
+                $id = $_POST['id'];
+                huy_vephim($id);
+            }
+            // Sử dụng $_POST['id'] thay vì $_GET['id']
+            $loadone_ve =  loadone_vephim($_POST['id']);
+            include "view/chitiet_ve.php";
+            break;
+
     }
-
-    include "./view/home/footer.php";
 }else{
-    header('location: login.php');
+    unset($_SESSION['id_hd']);
+    unset($_SESSION['id_ve']);
+    unset($_SESSION['mv']);
+    unset($_SESSION['tong']);
+    include "view/home.php";
 }
+include "view/footer.php";
+
+
+
+?>
+
